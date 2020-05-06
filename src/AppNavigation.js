@@ -6,7 +6,8 @@ import Details from './screen/Details';
 const AppStack = createStackNavigator(
     {
         Country: { screen: Country },
-        Capital: {screen:Capital}
+        Capital: {screen:Capital},
+        Details: {screen:Details}
     },
     {
       headerMode: 'none',

@@ -1,58 +1,60 @@
-import React from 'react';
-import { View, StyleSheet, Dimensions, TextInput, FlatList } from 'react-native';
-import { Container, Button, Text, ListItem, Left, Right, Body } from 'native-base';
-const axios = require('axios');
-const deviceHeight = Dimensions.get('window').height;
+import React, {Component} from 'react';
+import {Text, View, StyleSheet, Image} from 'react-native';
+import {Card, CardItem, Body} from 'native-base';
 
-export default class Details extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            countryDetails: this.props.navigation.state.params.Capital
-        }
-    }
+export default class  Details extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      loader: false,
+    };
+  }
+    render(){
+      let {capitaldata} = this.props.navigation.state.params;
 
-    renderItems = ({ item }) => {
-        return (
-            <ListItem>
-                <Left>
-
-                </Left>
-                <Body>
-                    <Text>capital <Text>{item.capital}</Text></Text>
-                    <Text>population <Text>{item.population}</Text></Text>
-                    <Text>latlng <Text>{item.latlng}</Text></Text>
-                </Body>
-                <Right>
-                    <Button onPress={()=>this.handleCapitalDetails(item)}><Text>Capital Weather</Text></Button>
-                </Right>
-            </ListItem>
-        )
-    }
-    render() {
-        return (
-            <Container>
-                <View style={{ marginHorizontal: 10 }}>
-                <ListItem>
-                <Left>
-
-                </Left>
-                <Body>
-                    <Text>temperature <Text>{item.temperature}</Text></Text>
-                    <Text>wind_speed <Text>{item.wind_speed}</Text></Text>
-                    <Text>precip <Text>{item.precip}</Text></Text>
-                </Body>
-            </ListItem>
-                </View>
-            </Container>
-        )
+      let {temperature, wind_speed, precip, weather_icons} = capitaldata.current;
+      let {
+        location: {name},
+      } = capitaldata;
+      return (
+        <View style={styles.container}>
+          <Card>
+            <CardItem>
+              <Body>
+                <Text style={{marginVertical: 1}}>
+                  <Text style={styles.label}>Capital City: </Text>
+                  {name}
+                </Text>
+                <Text style={{marginVertical: 1}}>
+                  <Text style={styles.label}>Temperature: </Text>
+                  {`${temperature} celcius`}
+                </Text>
+                <Text style={{marginVertical: 1}}>
+                  <Text style={styles.label}>Precipitation: </Text>
+                  {precip}
+                </Text>
+                <Text style={{marginVertical: 1}}>
+                  <Text style={styles.label}>Wind speed: </Text> {wind_speed}
+                </Text>
+              </Body>
+              <Body style={styles.iconPlate}>
+                {weather_icons.map(eachIcon => (
+                  <Image
+                    source={{uri: eachIcon}}
+                    style={{width: 50, height: 50, marginLeft: 50}}
+                  />
+                ))}
+              </Body>
+            </CardItem>
+          </Card>
+        </View>
+      );
     }
 }
 
+
 const styles = StyleSheet.create({
-    textinput: {
-        height: deviceHeight / 10,
-        paddingHorizontal: 5,
-        marginVertical: 10
-    }
-})
+  container: {flex: 1},
+  label: {fontWeight: 'bold', color: '#000'},
+  iconPlate: {flexDirection: 'row', flexWrap: 'wrap'},
+});

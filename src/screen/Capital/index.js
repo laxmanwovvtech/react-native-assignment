@@ -1,80 +1,139 @@
-import React from 'react';
-import { View, StyleSheet, Dimensions, TextInput, FlatList } from 'react-native';
-import { Container, Button, Text, ListItem, Left, Right, Body } from 'native-base';
-import Svg,{Image} from "react-native-svg";
-const axios = require('axios');
-const deviceHeight = Dimensions.get('window').height;
+import React, {Component} from 'react';
+import {
+  Text,
+  View,
+  FlatList,
+  ActivityIndicator,
+  StyleSheet,
+} from 'react-native';
+import {ListItem, Body, Thumbnail,Button, Toast, Left} from 'native-base';
+import {SvgUri} from 'react-native-svg';
+import axios from 'axios';
 
-export default class Country extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            countryDetails: this.props.navigation.state.params.capitalData
-        }
-    }
+const API_KEY = '407a3041920fabcdd2ed17b682176647';
 
-    handleCapitalDetails = async (city) => {
-        //https://restcountries.eu/rest/v2/name/
-        try {
-            const response = await axios.get(`http://api.weatherstack.com/current?access_key="407a3041920fabcdd2ed17b682176647"&query =${city}`);
-            alert(JSON.stringify(response))
-            if (response.length > 0) {
-                this.props.navigation.navigate('Details', { capitalData: response });
-            }
-        } catch (error) {
-            alert
-        }
+const CustomListItem = ({item, onpress}) => {
+  let {capital, population, latlng, flag, name} = item;
+  return (
+    <ListItem>
+      <Left style={styles.leftContainer}>
+        <SvgUri width="100%" height="100%" uri={flag} viewbox="0 0 46 46" />
+        
+      </Left>
 
+      <Body style={{padding: 10}}>
+        <Text>
+          <Text style={styles.listlabel}>Country: </Text>
+          {name}
+        </Text>
+        <Text>
+          <Text style={styles.listlabel}>Capital: </Text>
+          {capital}
+        </Text>
+        <Text>
+          <Text style={styles.listlabel}>Population: </Text>
+          {population}
+        </Text>
+        <Text>
+          <Text style={styles.listlabel}>LatLong: </Text>
+          {latlng.join(', ') || 'NA'}
+        </Text>
+      </Body>
+
+      <Body>
+        <Button
+          onPress={() => onpress(capital)}
+          style={{
+            justifyContent: 'center',
+            alignItems: 'center',
+            borderRadius: 10,
+            height: 50,
+          }}>
+          <Text style={{color: '#fff', fontSize: 16, textAlign: 'center'}}>
+            Capital Weather
+          </Text>
+        </Button>
+      </Body>
+    </ListItem>
+  );
+};
+
+class DetailsScreen extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      detailsData: this.props.navigation.state.params.details,
+      loader: false,
+    };
+  }
+  componentDidMount(){
+    //alert(JSON.stringify(this.props.navigation.state.params.details))
+  }
+
+  showIssue = () => {
+    Toast.show({
+      text: 'No Records to display',
+      position: 'bottom',
+    });
+  };
+
+  fetchCaptialInformation = async capital => {
+    this.setState({loader: true});
+    try {
+
+      let response = await axios.get(
+        `http://api.weatherstack.com/current?access_key=${API_KEY}&query=${capital}`,
+      );
+
+      this.props.navigation.navigate('Details', {
+        capitaldata: response.data,
+      });
+    } catch (e) {
+      this.showIssue();
     }
-   // http://api.weatherstack.com/current? access_key="407a3041920fabcdd2ed17b682176647"&query ="delhi"
-    renderItems = ({ item }) => {
-        return (
-            <ListItem>
-                <Left>
-                    <Svg height="40%" width="40%">
-                    <Image
-    x="5%"
-    y="5%"
-    width="20%"
-    height="20%"
-    preserveAspectRatio="xMidYMid slice"
-    opacity="0.5"
-    href={item.flag}
-    clipPath="url(#clip)"
-  />
-                    </Svg>
-                </Left>
-                <Body>
-                    <Text>capital <Text>{item.capital}</Text></Text>
-                    <Text>population <Text>{item.population}</Text></Text>
-                    <Text>latlng <Text>{item.latlng}</Text></Text>
-                </Body>
-                <Right>
-                    <Button block onPress={()=>this.handleCapitalDetails(item.capital)}><Text>Capital Weather</Text></Button>
-                </Right>
-            </ListItem>
-        )
-    }
-    render() {
-        return (
-            <Container>
-                <View style={{ marginHorizontal: 10 }}>
-           
-                    <FlatList
-                        data={this.state.countryDetails}
-                        renderItem={this.renderItems}
-                        keyExtractor={(item, index) => index.toString()}
-                    />
-                </View>
-            </Container>
-        )
-    }
+    this.setState({loader: false});
+  };
+  remderOverLayIndicator = () => (
+    <View style={styles.loader}>
+      <ActivityIndicator color={'blue'} size={80} />
+    </View>
+  );
+
+  render() {
+    return (
+      <View style={styles.container}>
+        <FlatList
+          data={this.state.detailsData}
+          renderItem={({item}) => (
+            <CustomListItem
+              item={item}
+              onpress={this.fetchCaptialInformation}
+            />
+          )}
+          keyExtractor={(item, idx) => item + idx.toString()}
+        />
+        {this.state.loader ? this.remderOverLayIndicator() : null}
+      </View>
+    );
+  }
 }
 
+export default DetailsScreen;
+
 const styles = StyleSheet.create({
-    textinput: {
-        height: deviceHeight / 10,
-        paddingHorizontal: 5,
-        marginVertical: 10
-    }
-})
+  loader: {
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    position: 'absolute',
+    elevation: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    // backgroundColor: 'grey',
+    opacity: 0.4,
+  },
+  container: {flex: 1},
+  listlabel: {fontWeight: 'bold', color: 'black'},
+  leftContainer: {height: '100%', width: '100%', aspectRatio: 1},
+});
