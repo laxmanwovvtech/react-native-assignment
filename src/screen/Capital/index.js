@@ -16,7 +16,6 @@ export default class Country extends React.Component {
     handleCapitalDetails = async (city) => {
         //https://restcountries.eu/rest/v2/name/
         try {
-
             const response = await axios.get(`http://api.weatherstack.com/current?access_key="407a3041920fabcdd2ed17b682176647"&query =${city}`);
             alert(JSON.stringify(response))
             if (response.length > 0) {
