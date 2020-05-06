@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, Dimensions, TextInput, FlatList } from 'react-native';
 import { Container, Button, Text, ListItem, Left, Right, Body } from 'native-base';
+import Svg,{Image} from "react-native-svg";
 const axios = require('axios');
 const deviceHeight = Dimensions.get('window').height;
 
@@ -8,16 +9,18 @@ export default class Country extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            countryDetails: this.props.navigation.state.params.Capital
+            countryDetails: this.props.navigation.state.params.capitalData
         }
     }
 
-    handleSubmit = async () => {
+    handleCapitalDetails = async (city) => {
         //https://restcountries.eu/rest/v2/name/
         try {
-            const response = await axios.get(`https://restcountries.eu/rest/v2/name/${this.state.countryName}`);
+
+            const response = await axios.get(`http://api.weatherstack.com/current?access_key="407a3041920fabcdd2ed17b682176647"&query =${city}`);
+            alert(JSON.stringify(response))
             if (response.length > 0) {
-                this.props.navigation.navigate('Capital', { capitalData: response });
+                this.props.navigation.navigate('Details', { capitalData: response });
             }
         } catch (error) {
             alert
@@ -29,7 +32,18 @@ export default class Country extends React.Component {
         return (
             <ListItem>
                 <Left>
-
+                    <Svg height="40%" width="40%">
+                    <Image
+    x="5%"
+    y="5%"
+    width="20%"
+    height="20%"
+    preserveAspectRatio="xMidYMid slice"
+    opacity="0.5"
+    href={item.flag}
+    clipPath="url(#clip)"
+  />
+                    </Svg>
                 </Left>
                 <Body>
                     <Text>capital <Text>{item.capital}</Text></Text>
@@ -37,7 +51,7 @@ export default class Country extends React.Component {
                     <Text>latlng <Text>{item.latlng}</Text></Text>
                 </Body>
                 <Right>
-                    <Button onPress={()=>this.handleCapitalDetails(item)}><Text>Capital Weather</Text></Button>
+                    <Button block onPress={()=>this.handleCapitalDetails(item.capital)}><Text>Capital Weather</Text></Button>
                 </Right>
             </ListItem>
         )
@@ -46,6 +60,7 @@ export default class Country extends React.Component {
         return (
             <Container>
                 <View style={{ marginHorizontal: 10 }}>
+           
                     <FlatList
                         data={this.state.countryDetails}
                         renderItem={this.renderItems}

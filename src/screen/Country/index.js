@@ -37,7 +37,7 @@ export default class Country extends React.Component{
                         placeholder="Enter country"
                         onChangeText={(countryName)=>this.setCoutryName(countryName)}
                     />
-                    <Button block  onPress={()=>this.handleSubmit()} ><Text>SUBMIT</Text></Button>
+                    <Button block disabled={this.state.countryName.length>0 ? false: true} onPress={()=>this.handleSubmit()} ><Text>SUBMIT</Text></Button>
                 </View> 
             </Container>
         );
